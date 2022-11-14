@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { v4 } from "uuid";
 
-const cardcapture = () => {
+const Cardcapture = () => {
   const [uploading, setUploading] = useState(false);
   const [uuid, setUuid] = useState(v4());
 
@@ -49,4 +49,4 @@ const cardcapture = () => {
   );
 };
 
-export default cardcapture;
+export default Cardcapture;
