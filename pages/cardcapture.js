@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { supabase } from "../utils/supabaseClient";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { v4 } from "uuid";
 
 const Cardcapture = () => {
+  const supabase = useSupabaseClient();
+
   const [uploading, setUploading] = useState(false);
   const [uuid, setUuid] = useState(v4());
 
