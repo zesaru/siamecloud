@@ -8,8 +8,8 @@ const key = process.env["FORM_RECOGNIZER_API_KEY"];
 const endpoint = process.env["FORM_RECOGNIZER_ENDPOINT"];
 
 // sample document
-const businessCardURL =
-  "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-REST-api-samples/master/curl/form-recognizer/business-card-english.jpg";
+// const businessCardURL =
+//  "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-REST-api-samples/master/curl/form-recognizer/business-card-english.jpg";
 
 const BusinessCard = async (req, res) => {
   const client = new DocumentAnalysisClient(

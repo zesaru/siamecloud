@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { v4 } from "uuid";
 
 const Cardcapture = () => {
   const supabase = useSupabaseClient();
 
+  const [cardUrl, setCardUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uuid, setUuid] = useState(v4());
 
@@ -20,15 +21,16 @@ const Cardcapture = () => {
       const fileExt = file.name.split(".").pop();
       const fileName = `${uuid}.${fileExt}`;
       const filePath = `${fileName}`;
-      console.log(`${file}`, `${fileName}`);
-      console.log(filePath);
-
       let { error: uploadError } = await supabase.storage
         .from("cards")
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
         throw uploadError;
+      } else {
+        const url = `https://yzzrsmaxlukpahicprzp.supabase.co/storage/v1/object/public/cards/${filePath}`;
+        setCardUrl(url);
+        
       }
     } catch (error) {
       alert("Error uploading card!");
@@ -38,15 +40,29 @@ const Cardcapture = () => {
     }
   };
   return (
-    <div>
-      <input
-        type="file"
-        accept="image/*"
-        capture="camera"
-        id="single"
-        onChange={uploadCard}
-        disabled={uploading}
-      />
+    <div style={{ width: 500 }}>
+      {cardUrl ? (
+        <img src={cardUrl} alt="Card" />
+      ) : (
+        <div className="avatar no-image" style={{ height: 600, width: 600 }} />
+      )}
+      <div>
+        <label className="button primary block" htmlFor="single">
+          {uploading ? "Uploading ..." : "Upload"}
+        </label>
+        <input
+          style={{
+            visibility: "hidden",
+            position: "absolute",
+          }}
+          type="file"
+          accept="image/*"
+          capture="camera"
+          id="single"
+          onChange={uploadCard}
+          disabled={uploading}
+        />
+      </div>
     </div>
   );
 };
