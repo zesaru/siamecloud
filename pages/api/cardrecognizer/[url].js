@@ -11,7 +11,8 @@ const endpoint = process.env["FORM_RECOGNIZER_ENDPOINT"];
 
 const BusinessCard = async (req, res) => {
   let url = req.query.url;
-  const businessCardURL = `https://yzzrsmaxlukpahicprzp.supabase.co/storage/v1/object/public/cards/${url}.jpeg`;
+  const businessCardURL = `https://yzzrsmaxlukpahicprzp.supabase.co/storage/v1/object/public/cards/${url}.jpg`;
+
   const client = new DocumentAnalysisClient(
     endpoint,
     new AzureKeyCredential(key)

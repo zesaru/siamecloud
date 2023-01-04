@@ -30,7 +30,12 @@ const Cardcapture = () => {
       } else {
         const url = `https://yzzrsmaxlukpahicprzp.supabase.co/storage/v1/object/public/cards/${filePath}`;
         setCardUrl(url);
-        
+
+        let fetchRes = await fetch(
+          `http://localhost:3000/api/cardrecognizer/${uuid}`
+        );
+        let res = await fetchRes.json();
+        console.log(res); //api for the get request
       }
     } catch (error) {
       alert("Error uploading card!");
