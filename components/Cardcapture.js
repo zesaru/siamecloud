@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { v4 } from "uuid";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Cardcapture = () => {
   const supabase = useSupabaseClient();
@@ -31,10 +33,16 @@ const Cardcapture = () => {
         const url = `https://yzzrsmaxlukpahicprzp.supabase.co/storage/v1/object/public/cards/${filePath}`;
         setCardUrl(url);
 
-        let fetchRes = await fetch(
-          `http://localhost:3000/api/cardrecognizer/${uuid}`
+        let fetchRes = await toast.promise(
+          fetch(`http://localhost:3000/api/cardrecognizer/${uuid}`),
+          {
+            pending: "Promise is pending",
+            success: "Promise resolved 👌",
+            error: "Promise rejected 🤯",
+          }
         );
-        let res = await fetchRes.json();
+
+        let res = fetchRes.json();
         console.log(res); //api for the get request
       }
     } catch (error) {
@@ -45,30 +53,36 @@ const Cardcapture = () => {
     }
   };
   return (
-    <div style={{ width: 500 }}>
-      {cardUrl ? (
-        <img src={cardUrl} alt="Card" />
-      ) : (
-        <div className="avatar no-image" style={{ height: 600, width: 600 }} />
-      )}
-      <div>
-        <label className="button primary block" htmlFor="single">
-          {uploading ? "Uploading ..." : "Upload"}
-        </label>
-        <input
-          style={{
-            visibility: "hidden",
-            position: "absolute",
-          }}
-          type="file"
-          accept="image/*"
-          capture="camera"
-          id="single"
-          onChange={uploadCard}
-          disabled={uploading}
-        />
+    <>
+      <div style={{ width: 500 }}>
+        {cardUrl ? (
+          <img src={cardUrl} alt="Card" />
+        ) : (
+          <div
+            className="avatar no-image"
+            style={{ height: 600, width: 600 }}
+          />
+        )}
+        <div>
+          <label className="button primary block" htmlFor="single">
+            {uploading ? "Uploading ..." : "Upload"}
+          </label>
+          <input
+            style={{
+              visibility: "hidden",
+              position: "absolute",
+            }}
+            type="file"
+            accept="image/*"
+            capture="camera"
+            id="single"
+            onChange={uploadCard}
+            disabled={uploading}
+          />
+        </div>
+        <ToastContainer />
       </div>
-    </div>
+    </>
   );
 };
 
