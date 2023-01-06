@@ -43,7 +43,6 @@ const Cardcapture = () => {
         );
 
         let res = fetchRes.json();
-        console.log(res); //api for the get request
       }
     } catch (error) {
       alert("Error uploading card!");

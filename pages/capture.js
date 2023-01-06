@@ -1,12 +1,12 @@
 import Cardcapture from "../components/cardcapture";
 
-const capture = () => {
+const Capture = () => {
   return (
     <>
-      <div>capture</div>
       <Cardcapture />
     </>
   );
 };
 
 export default capture;
+export default Capture;
