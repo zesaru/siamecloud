@@ -36,13 +36,14 @@ const Cardcapture = () => {
         let fetchRes = await toast.promise(
           fetch(`http://localhost:3000/api/cardrecognizer/${uuid}`),
           {
-            pending: "Promise is pending",
-            success: "Promise resolved 👌",
-            error: "Promise rejected 🤯",
+            pending: "Procesando Tarjeta",
+            success: "Tarjeta reconocida 👌",
+            error: "Ha ocurrido un error 🤯",
           }
         );
 
-        let res = fetchRes.json();
+        let res = await fetchRes.json();
+        console.log(res.result);
       }
     } catch (error) {
       alert("Error uploading card!");

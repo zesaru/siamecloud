@@ -8,5 +8,4 @@ const Capture = () => {
   );
 };
 
-export default capture;
 export default Capture;
