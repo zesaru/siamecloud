@@ -1,5 +1,4 @@
 import Cardcapture from "../components/cardcapture";
-
 const Capture = () => {
   return (
     <>

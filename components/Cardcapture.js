@@ -3,6 +3,7 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { v4 } from "uuid";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { supabase } from "../utils/supabaseClient";
 
 const Cardcapture = () => {
   const supabase = useSupabaseClient();
@@ -43,7 +44,30 @@ const Cardcapture = () => {
         );
 
         let res = await fetchRes.json();
-        console.log(res.result);
+
+        if (res === undefined) {
+          throw new Error(
+            "Failed to extract data from at least one business card."
+          );
+        }
+
+        console.log("Business Card Fields:");
+
+        // For a list of fields that are contained in the response, please refer to
+        // the "Supported fields" section at the following link:
+        // https://aka.ms/formrecognizer/businesscardfields
+
+        let Name =
+          res.result.fields.ContactNames.values[0].properties.FirstName.value;
+
+        try {
+          const result = await supabase
+            .from("contactos")
+            .insert({ name: Name });
+          console.log(result);
+        } catch (error) {
+          console.error(error);
+        }
       }
     } catch (error) {
       alert("Error uploading card!");
