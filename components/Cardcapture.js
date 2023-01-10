@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { supabase } from "../utils/supabaseClient";
 import { v4 } from "uuid";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { supabase } from "../utils/supabaseClient";
 
 const Cardcapture = () => {
   const supabase = useSupabaseClient();
@@ -57,13 +57,22 @@ const Cardcapture = () => {
         // the "Supported fields" section at the following link:
         // https://aka.ms/formrecognizer/businesscardfields
 
-        let Name =
+        const FirstName =
           res.result.fields.ContactNames.values[0].properties.FirstName.value;
-
+        const LastName =
+          res.result.fields.ContactNames.values[0].properties.LastName.value;
+        console.log(res.result);
+        const Address = res.result.fields.Addresses.values[0].content;
+        const CompanyName = res.result.fields.CompanyNames.values[0].content;
+        const Email = res.result.fields.Emails.values[0].content;
         try {
-          const result = await supabase
-            .from("contactos")
-            .insert({ name: Name });
+          const result = await supabase.from("contactos").insert({
+            first_name: FirstName,
+            last_name: LastName,
+            company_name: CompanyName,
+            address: Address,
+            email: Email,
+          });
           console.log(result);
         } catch (error) {
           console.error(error);
