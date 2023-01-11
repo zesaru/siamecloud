@@ -33,6 +33,7 @@ const Cardcapture = () => {
       } else {
         const url = `https://yzzrsmaxlukpahicprzp.supabase.co/storage/v1/object/public/cards/${filePath}`;
         setCardUrl(url);
+        toast.success("Tarjeta subida 👌", { autoClose: 2000 });
 
         let fetchRes = await toast.promise(
           fetch(`http://localhost:3000/api/cardrecognizer/${uuid}`),
@@ -45,26 +46,18 @@ const Cardcapture = () => {
 
         let res = await fetchRes.json();
 
-        if (res === undefined) {
-          throw new Error(
-            "Failed to extract data from at least one business card."
-          );
-        }
-
-        console.log("Business Card Fields:");
-
-        // For a list of fields that are contained in the response, please refer to
-        // the "Supported fields" section at the following link:
-        // https://aka.ms/formrecognizer/businesscardfields
-
         const FirstName =
-          res.result.fields.ContactNames.values[0].properties.FirstName.value;
+          res.result.fields.ContactNames.values[0].properties?.FirstName.value;
         const LastName =
-          res.result.fields.ContactNames.values[0].properties.LastName.value;
-        console.log(res.result);
-        const Address = res.result.fields.Addresses.values[0].content;
-        const CompanyName = res.result.fields.CompanyNames.values[0].content;
-        const Email = res.result.fields.Emails.values[0].content;
+          res.result.fields.ContactNames.values[0].properties?.LastName.value;
+        const Address = res.result.fields.Addresses?.values[0].content;
+        const CompanyName = res.result.fields?.CompanyNames.values[0].content;
+        const Email = res.result.fields.Emails?.values[0].content;
+        const JobTitles = res.result.fields.JobTitles?.values[0].content;
+        const WorkPhones = res.result.fields.WorkPhones?.values[0].content;
+        const Faxes = res.result.fields.Faxes?.values[0].content;
+        const Websites = res.result.fields.Websites?.values[0].content;
+
         try {
           const result = await supabase.from("contactos").insert({
             first_name: FirstName,
@@ -72,15 +65,18 @@ const Cardcapture = () => {
             company_name: CompanyName,
             address: Address,
             email: Email,
+            job_title: JobTitles,
+            work_phone: WorkPhones,
+            fax: Faxes,
+            website: Websites,
           });
-          console.log(result);
+          toast.success("Tarjeta ingresada 👌", { autoClose: 2000 });
         } catch (error) {
-          console.error(error);
+          toast.error("Fetch Failed" + error);
         }
       }
     } catch (error) {
-      alert("Error uploading card!");
-      console.log(error);
+      toast.error("Fetch Failed" + error);
     } finally {
       setUploading(false);
     }
@@ -113,7 +109,7 @@ const Cardcapture = () => {
             disabled={uploading}
           />
         </div>
-        <ToastContainer />
+        <ToastContainer autoClose={2500} />
       </div>
     </>
   );
