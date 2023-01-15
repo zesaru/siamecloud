@@ -1,10 +1,11 @@
+
 import React from "react";
-import Formulario from "../components/Formulario";
+import ContactList from "../components/ContactList";
 
 const hello = () => {
   return (
     <>
-      <Formulario />
+      <ContactList></ContactList>
     </>
   );
 };
