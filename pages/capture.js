@@ -1,8 +1,10 @@
-import Cardcapture from "../components/cardcapture";
+//import Cardcapture from "../components/cardcapture";
+
 const Capture = () => {
   return (
     <>
-      <Cardcapture />
+      {/* <Cardcapture /> */}
+      Hello
     </>
   );
 };
