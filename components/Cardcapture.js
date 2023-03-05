@@ -36,7 +36,7 @@ const Cardcapture = () => {
         toast.success("Tarjeta subida 👌", { autoClose: 2000 });
 
         let fetchRes = await toast.promise(
-          fetch(`http://localhost:3000/api/cardrecognizer/${uuid}`),
+          fetch(`/api/cardrecognizer/${uuid}`),
           {
             pending: "Procesando Tarjeta",
             success: "Tarjeta reconocida 👌",
