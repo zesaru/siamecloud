@@ -10,6 +10,7 @@ const Cardcapture = () => {
   const [cardUrl, setCardUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uuid, setUuid] = useState(v4());
+  const [message, setMessage] = useState("");
 
   const uploadCard = async (event) => {
     try {
@@ -20,6 +21,7 @@ const Cardcapture = () => {
       }
 
       const file = event.target.files[0];
+
       const fileExt = file.name.split(".").pop();
       const fileName = `${uuid}.${fileExt}`;
       const filePath = `${fileName}`;
@@ -44,6 +46,7 @@ const Cardcapture = () => {
         );
 
         let res = await fetchRes.json();
+        console.log(res);
 
         const FirstName =
           res.result.fields.ContactNames.values[0].properties?.FirstName.value;
@@ -72,10 +75,12 @@ const Cardcapture = () => {
           toast.success("Tarjeta ingresada 👌", { autoClose: 2000 });
         } catch (error) {
           toast.error("Fetch Failed" + error);
+          setMessage(error);
         }
       }
     } catch (error) {
       toast.error("Fetch Failed" + error);
+      setMessage(error);
     } finally {
       setUploading(false);
     }
@@ -125,6 +130,7 @@ const Cardcapture = () => {
           />
         </div>
         <ToastContainer autoClose={2500} />
+        <label>error: {message}</label>
       </div>
     </div>
   );
