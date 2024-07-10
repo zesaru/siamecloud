@@ -46,37 +46,84 @@ const Cardcapture = () => {
         );
 
         let res = await fetchRes.json();
-        console.log(res);
 
-        const FirstName =
-          res.result.fields.ContactNames.values[0].properties?.FirstName.value;
-        const LastName =
-          res.result.fields.ContactNames.values[0].properties?.LastName.value;
-        const Address = res.result.fields.Addresses?.values[0].content;
-        const CompanyName = res.result.fields?.CompanyNames.values[0].content;
-        const Email = res.result.fields.Emails?.values[0].content;
-        const JobTitles = res.result.fields.JobTitles?.values[0].content;
-        const WorkPhones = res.result.fields.WorkPhones?.values[0].content;
-        const Faxes = res.result.fields.Faxes?.values[0].content;
-        const Websites = res.result.fields.Websites?.values[0].content;
-
-        try {
-          const result = await supabase.from("contactos").insert({
-            first_name: FirstName,
-            last_name: LastName,
-            company_name: CompanyName,
-            address: Address,
-            email: Email,
-            job_title: JobTitles,
-            work_phone: WorkPhones,
-            fax: Faxes,
-            website: Websites,
-          });
-          toast.success("Tarjeta ingresada 👌", { autoClose: 2000 });
-        } catch (error) {
-          toast.error("Fetch Failed" + error);
-          setMessage(error);
+        function extractAddresses(fields) {
+          const addresses = fields?.Addresses?.values;
+          return addresses.map(addr => addr.content);
         }
+
+        function extractContactNames(fields) {
+          const names = fields?.ContactNames?.values;
+          return names.map(name => ({
+            fullName: name.content,
+            firstName: name.properties.FirstName.content,
+            lastName: name.properties.LastName.content
+          }));
+        }
+
+        function extractEmails(fields) {
+          const emails = fields?.Emails?.values;
+          return emails.map(email => email.content);
+        }
+
+        function extractPhones(fields, phoneType) {
+          const phones = fields?.[phoneType]?.values || [];
+          return phones.map(phone => phone.content);
+        }
+
+        function extractJobTitles(fields) {
+          const titles = fields?.JobTitles?.values;
+          return titles.map(title => title.content);
+        }
+
+        // Example usage
+        const fields = res.result.fields;
+        const addresses = extractAddresses(fields);
+        const contactNames = extractContactNames(fields);
+        const emails = extractEmails(fields);
+        const faxes = extractPhones(fields, "Faxes");
+        const workPhones = extractPhones(fields, "WorkPhones");
+        const jobTitles = extractJobTitles(fields);
+
+        console.log("Addresses:", addresses);
+        console.log("Contact Names:", contactNames);
+        console.log("Emails:", emails);
+        console.log("Faxes:", faxes);
+        console.log("Work Phones:", workPhones);
+        console.log("Job Titles:", jobTitles);
+
+
+        // const FirstName =
+        //   res.result.fields.ContactNames.values[0].properties?.FirstName.value;
+        // const LastName =
+        //   res.result.fields.ContactNames.values[0].properties?.LastName.value;
+        // const Address = res.result.fields.Addresses?.values[0].content;
+        // const CompanyName = res.result.fields?.CompanyNames.values[0].content;
+        // const Email = res.result.fields.Emails?.values[0].content;
+        // const JobTitles = res.result.fields.JobTitles?.values[0].content;
+        // const WorkPhones = res.result.fields.WorkPhones?.values[0].content;
+        // const Faxes = res.result.fields.Faxes?.values[0].content;
+        // const Websites = res.result.fields.Websites?.values[0].content;
+
+
+
+        // try {
+        //   const result = await supabase.from("contactos").insert({
+        //     first_name: FirstName,
+        //     last_name: LastName,
+        //     company_name: CompanyName,
+        //     address: Address,
+        //     email: Email,
+        //     job_title: JobTitles,
+        //     work_phone: WorkPhones,
+        //     fax: Faxes,
+        //     website: Websites,
+        //   });
+        //   toast.success("Tarjeta ingresada 👌", { autoClose: 2000 });
+        // } catch (error) {
+        //   toast.error("Fetch Failed" + error);
+        //   setMessage(error);
+        // }
       }
     } catch (error) {
       toast.error("Fetch Failed" + error);
