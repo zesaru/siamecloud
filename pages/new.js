@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 
 export default function Home() {
@@ -6,12 +6,34 @@ export default function Home() {
   const [capturedImage, setCapturedImage] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
   const [facingMode, setFacingMode] = useState('environment'); // Cambia entre 'user' y 'environment'
+  const [focusDistance, setFocusDistance] = useState(0); // Para controlar el enfoque
 
   const videoConstraints = {
     facingMode,
     width: 640,
     height: 480,
+    advanced: [{ focusMode: "manual" }] // Intentar usar el control manual de enfoque
   };
+
+  useEffect(() => {
+    const applyFocus = async () => {
+      const stream = webcamRef.current?.stream;
+      if (stream) {
+        const track = stream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities();
+        const settings = track.getSettings();
+
+        if (capabilities.focusDistance && capabilities.focusMode.includes("manual")) {
+          await track.applyConstraints({
+            advanced: [{ focusDistance: focusDistance }]
+          });
+        } else {
+          console.warn("El dispositivo no soporta ajustes manuales de enfoque.");
+        }
+      }
+    };
+    applyFocus();
+  }, [focusDistance]);
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -29,7 +51,7 @@ export default function Home() {
       const cropContext = cropCanvas.getContext('2d');
 
       const cropWidth = 400; // Ancho del recorte (ajusta según sea necesario)
-      const cropHeight = 240; // Alto del recorte (ajusta según sea necesario)
+      const cropHeight = 200; // Alto del recorte (ajusta según sea necesario)
       const canvasWidth = img.width;
       const canvasHeight = img.height;
       const cropX = (canvasWidth - cropWidth) / 2; // Centro horizontalmente el recorte
@@ -49,7 +71,7 @@ export default function Home() {
       const resizeCanvas = document.createElement('canvas');
       const resizeContext = resizeCanvas.getContext('2d');
 
-      const MAX_WIDTH = 500; // Max ancho para la imagen redimensionada
+      const MAX_WIDTH = 300; // Max ancho para la imagen redimensionada
       const scaleSize = MAX_WIDTH / cropWidth;
       resizeCanvas.width = MAX_WIDTH;
       resizeCanvas.height = cropHeight * scaleSize;
@@ -101,6 +123,10 @@ export default function Home() {
     setFacingMode(prevMode => (prevMode === 'user' ? 'environment' : 'user'));
   };
 
+  const handleFocusChange = (event) => {
+    setFocusDistance(event.target.value);
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white p-6 rounded-lg shadow-lg text-center">
@@ -128,6 +154,17 @@ export default function Home() {
           >
             Cambiar Cámara
           </button>
+        </div>
+        <div className="mt-4">
+          <input
+            type="range"
+            min={0}
+            max={10}
+            value={focusDistance}
+            onChange={handleFocusChange}
+            className="w-full"
+          />
+          <label className="block mt-2">Ajuste de Enfoque: {focusDistance}</label>
         </div>
         {croppedImage && (
           <div className="mt-6">
