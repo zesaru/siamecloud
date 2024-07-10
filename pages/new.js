@@ -1,61 +1,25 @@
-import { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
+import Webcam from 'react-webcam';
 
 export default function Home() {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
+  const webcamRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
-  const [croppedImage, setCroppedImage] = useState(null);
-  const [isRearCamera, setIsRearCamera] = useState(true); // Para alternar entre cámara frontal y trasera
-  const [devices, setDevices] = useState([]);
+  const [resizedImage, setResizedImage] = useState(null);
+  const [facingMode, setFacingMode] = useState('environment'); // Cambia entre 'user' y 'environment'
 
-  useEffect(() => {
-    async function getStream() {
-      const videoInputs = await navigator.mediaDevices.enumerateDevices().then(devices => (
-        devices.filter(device => device.kind === 'videoinput')
-      ));
-      setDevices(videoInputs);
-
-      if (videoInputs.length) {
-        await switchCamera(videoInputs[isRearCamera ? 0 : 1]?.deviceId || videoInputs[0]?.deviceId);
-      }
-    }
-
-    getStream();
-  }, [isRearCamera]);
-
-  const switchCamera = async (deviceId) => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: {
-          deviceId: deviceId ? { exact: deviceId } : undefined
-        }
-      });
-
-      const video = videoRef.current;
-      if (video) {
-        video.srcObject = stream;
-        video.play();
-      }
-    }
+  const videoConstraints = {
+    facingMode,
+    width: 640,
+    height: 480,
   };
 
-  const toggleCamera = () => {
-    setIsRearCamera(prevState => !prevState);
-  };
+  const capture = useCallback(() => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    setCapturedImage(imageSrc);
 
-  const capturePhoto = () => {
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-    if (canvas && video) {
-      const context = canvas.getContext('2d');
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const image = canvas.toDataURL('image/png');
-      setCapturedImage(image);
-      
-      // Crop and resize the image
-      cropAndResizeImage(image);
-    }
-  };
+    // Crop and resize the image
+    cropAndResizeImage(imageSrc);
+  }, [webcamRef]);
 
   const cropAndResizeImage = (imageSrc) => {
     const img = new Image();
@@ -64,10 +28,10 @@ export default function Home() {
       const cropCanvas = document.createElement('canvas');
       const cropContext = cropCanvas.getContext('2d');
 
-      const cropWidth = 400; // Ancho del recorte (ajusta según sea necesario)
-      const cropHeight = 200; // Alto del recorte (ajusta según sea necesario)
-      const canvasWidth = canvasRef.current.width;
-      const canvasHeight = canvasRef.current.height;
+      const cropWidth = 640; // Ancho del recorte
+      const cropHeight = 320; // Alto del recorte
+      const canvasWidth = img.width;
+      const canvasHeight = img.height;
       const cropX = (canvasWidth - cropWidth) / 2; // Centro horizontalmente el recorte
       const cropY = (canvasHeight - cropHeight) / 2; // Centro verticalmente el recorte
 
@@ -86,35 +50,44 @@ export default function Home() {
       resizeCanvas.height = cropHeight * scaleSize;
 
       resizeContext.drawImage(cropCanvas, 0, 0, resizeCanvas.width, resizeCanvas.height);
-      setCroppedImage(resizeCanvas.toDataURL('image/png'));
+      setResizedImage(resizeCanvas.toDataURL('image/png'));
     };
+  };
+
+  const switchCamera = () => {
+    setFacingMode(prevMode => (prevMode === 'user' ? 'environment' : 'user'));
   };
 
   return (
     <div style={{ position: 'relative', textAlign: 'center' }}>
       <h1>Captura de tarjeta de presentación</h1>
       <div style={{ position: 'relative', display: 'inline-block' }}>
-        <video ref={videoRef} style={{ width: '100%', maxWidth: '600px' }}></video>
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/png"
+          videoConstraints={videoConstraints}
+          style={{ width: '100%', maxWidth: '640px' }}
+        />
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
-          width: '65%', // Ancho del marco en porcentaje
-          height: '40%', // Alto del marco en porcentaje
+          width: '90%',
+          height: '40%',
           transform: 'translate(-50%, -50%)',
           border: '4px solid red',
           boxSizing: 'border-box',
-          pointerEvents: 'none'
+          pointerEvents: 'none'  // Para permitir interactuar con el video
         }}></div>
       </div>
       <br />
-      <button onClick={capturePhoto}>Capturar</button>
-      <button onClick={toggleCamera}>Cambiar Cámara</button>
-      <canvas ref={canvasRef} style={{ display: 'none' }} width="640" height="480"></canvas>
-      {croppedImage && (
+      <button onClick={capture}>Capturar</button>
+      <button onClick={switchCamera}>Cambiar Cámara</button>
+      {resizedImage && (
         <div>
           <h2>Imagen Capturada y Redimensionada:</h2>
-          <img src={croppedImage} alt="Captured and Resized" style={{ width: '100%', maxWidth: '300px' }} />
+          <img src={resizedImage} alt="Captured and Resized" style={{ width: '100%', maxWidth: '300px' }} />
         </div>
       )}
     </div>
