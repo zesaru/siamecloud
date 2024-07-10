@@ -1,5 +1,3 @@
-//add newpage
-
 import { useRef, useEffect, useState } from 'react';
 
 export default function Home() {
@@ -7,22 +5,43 @@ export default function Home() {
   const canvasRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
+  const [isRearCamera, setIsRearCamera] = useState(true); // Para alternar entre cámara frontal y trasera
+  const [devices, setDevices] = useState([]);
 
   useEffect(() => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          const video = videoRef.current;
-          if (video) {
-            video.srcObject = stream;
-            video.play();
-          }
-        })
-        .catch(err => {
-          console.error("Error accessing the camera: ", err);
-        });
+    async function getStream() {
+      const videoInputs = await navigator.mediaDevices.enumerateDevices().then(devices => (
+        devices.filter(device => device.kind === 'videoinput')
+      ));
+      setDevices(videoInputs);
+
+      if (videoInputs.length) {
+        await switchCamera(videoInputs[isRearCamera ? 0 : 1]?.deviceId || videoInputs[0]?.deviceId);
+      }
     }
-  }, []);
+
+    getStream();
+  }, [isRearCamera]);
+
+  const switchCamera = async (deviceId) => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          deviceId: deviceId ? { exact: deviceId } : undefined
+        }
+      });
+
+      const video = videoRef.current;
+      if (video) {
+        video.srcObject = stream;
+        video.play();
+      }
+    }
+  };
+
+  const toggleCamera = () => {
+    setIsRearCamera(prevState => !prevState);
+  };
 
   const capturePhoto = () => {
     const canvas = canvasRef.current;
@@ -45,10 +64,12 @@ export default function Home() {
       const cropCanvas = document.createElement('canvas');
       const cropContext = cropCanvas.getContext('2d');
 
-      const cropWidth = 640; // Width of the crop
-      const cropHeight = 320; // Height of the crop
-      const cropX = (img.width - cropWidth) / 2; // Center crop horizontally
-      const cropY = (img.height - cropHeight) / 2; // Center crop vertically
+      const cropWidth = 400; // Ancho del recorte (ajusta según sea necesario)
+      const cropHeight = 200; // Alto del recorte (ajusta según sea necesario)
+      const canvasWidth = canvasRef.current.width;
+      const canvasHeight = canvasRef.current.height;
+      const cropX = (canvasWidth - cropWidth) / 2; // Centro horizontalmente el recorte
+      const cropY = (canvasHeight - cropHeight) / 2; // Centro verticalmente el recorte
 
       cropCanvas.width = cropWidth;
       cropCanvas.height = cropHeight;
@@ -59,7 +80,7 @@ export default function Home() {
       const resizeCanvas = document.createElement('canvas');
       const resizeContext = resizeCanvas.getContext('2d');
 
-      const MAX_WIDTH = 300; // Setting max width for the resized image
+      const MAX_WIDTH = 300; // Max ancho para la imagen redimensionada
       const scaleSize = MAX_WIDTH / cropWidth;
       resizeCanvas.width = MAX_WIDTH;
       resizeCanvas.height = cropHeight * scaleSize;
@@ -78,8 +99,8 @@ export default function Home() {
           position: 'absolute',
           top: '50%',
           left: '50%',
-          width: '80%',
-          height: '40%',
+          width: '65%', // Ancho del marco en porcentaje
+          height: '40%', // Alto del marco en porcentaje
           transform: 'translate(-50%, -50%)',
           border: '4px solid red',
           boxSizing: 'border-box',
@@ -88,7 +109,8 @@ export default function Home() {
       </div>
       <br />
       <button onClick={capturePhoto}>Capturar</button>
-      <canvas ref={canvasRef} style={{ display: 'none' }} width="640" height="540"></canvas>
+      <button onClick={toggleCamera}>Cambiar Cámara</button>
+      <canvas ref={canvasRef} style={{ display: 'none' }} width="640" height="480"></canvas>
       {croppedImage && (
         <div>
           <h2>Imagen Capturada y Redimensionada:</h2>
