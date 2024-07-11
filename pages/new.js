@@ -9,7 +9,7 @@ export default function Home() {
   const [focusDistance, setFocusDistance] = useState(0); // Para controlar el enfoque
 
   const videoConstraints = {
-    facingMode: "user",
+    facingMode,
     width: 1280,
     height: 720,
     advanced: [{ focusMode: "manual" }] // Intentar usar el control manual de enfoque
